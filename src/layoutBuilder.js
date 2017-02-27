@@ -588,20 +588,22 @@ LayoutBuilder.prototype.processLeaf = function (node) {
 	}
 };
 
-LayoutBuilder.prototype.buildNextLine = function (textNode) {
-	if (!textNode._inlines || textNode._inlines.length === 0) {
-		return null;
-	}
+LayoutBuilder.prototype.buildNextLine = function(textNode) {
+    if (!textNode._inlines || textNode._inlines.length === 0) return null;
 
-	var line = new Line(this.writer.context().availableWidth);
+    var line = new Line(this.writer.context().availableWidth);
 
-	while (textNode._inlines && textNode._inlines.length > 0 && line.hasEnoughSpaceForInline(textNode._inlines[0])) {
-		line.addInline(textNode._inlines.shift());
-	}
+    while(textNode._inlines && textNode._inlines.length > 0 && line.hasEnoughSpaceForInline(textNode._inlines[0])) {
+        line.addInline(textNode._inlines.shift());
+    }
 
-	line.lastLineInParagraph = textNode._inlines.length === 0;
+    if(line.inlines.length === 0){
+      // the first word was too long to fit into the line, grab as much as can fit and leave the rest in the node
+      line.addPartInline(textNode._inlines[0]);
+    }
 
-	return line;
+    line.lastLineInParagraph = textNode._inlines.length === 0;
+    return line;
 };
 
 // images

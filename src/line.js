@@ -26,9 +26,9 @@ Line.prototype.getAscenderHeight = function () {
 };
 
 Line.prototype.hasEnoughSpaceForInline = function (inline) {
-	if (this.inlines.length === 0) {
-		return true;
-	}
+	//if (this.inlines.length === 0) {
+	//	return true;
+	//}
 	if (this.newLineForced) {
 		return false;
 	}
@@ -50,6 +50,42 @@ Line.prototype.addInline = function (inline) {
 	if (inline.lineEnd) {
 		this.newLineForced = true;
 	}
+};
+Line.prototype.addPartInline = function(inline) {
+  // guess number of characters ignoring kerning.  This could be better done by measuring perhaps
+  var avgLengthPerChar = (inline.width - inline.leadingCut - inline.trailingCut) / inline.text.length;
+  var useChars = Math.ceil(this.maxWidth / avgLengthPerChar, 0);
+
+  // there should be a better way to clone an inline than this
+  var newInline = {
+    alignment: inline.alignment,
+    background: inline.background,
+    color: inline.color,
+    decoration: inline.decoration,
+    decorationColor: inline.decorationColor,
+    decorationStyle: inline.decorationStyle,
+    font: inline.font,
+    fontSize: inline.fontSize,
+    height: inline.height,
+    leadingCut: inline.leadingCut,
+    trailingCut: inline.trailingCut,
+		//
+		inlineEnd: true,
+  };
+
+  // divide the width between the two - also should really be measured properly if I knew how
+  newInline.width = inline.width * useChars / inline.text.length;
+  inline.width = inline.width - newInline.width;
+
+  newInline.text = inline.text.substr(0,useChars);
+  inline.text = inline.text.substr(useChars);
+
+  // write the newly cloned inline to the line, leave the old inline to get picked up next iteration
+	newInline.x = this.inlineWidths - this.leadingCut;
+
+  this.inlines.push(newInline);
+  this.inlineWidths += newInline.width;
+	this.newLineForced = true;
 };
 
 Line.prototype.getWidth = function () {
