@@ -443,14 +443,14 @@ LayoutBuilder.prototype.processRow = function (columns, widths, gaps, tableBody,
 
 			self.writer.context().beginColumn(width, leftOffset, getEndingCell(column, i));
 			if (!column._span) {
-				if (height) {
-					self.writer.beginClip(width, height);
-				}
+				// if (height) {
+				// 	self.writer.beginClip(width, height);
+				// }
 				self.processNode(column);
 				addAll(positions, column.positions);
-				if (height) {
-					self.writer.endClip();
-				}
+				// if (height) {
+				// 	self.writer.endClip();
+				// }
 			} else if (column._columnEndingContext) {
 				// row-span ending
 				self.writer.context().markEnding(column);

@@ -92,7 +92,11 @@ DocumentContext.prototype.completeColumnGroup = function (height) {
 
 	this.endingCell = null;
 	this.x = saved.x;
-	this.y = height && (saved.y + height) || saved.bottomMost.y;
+	var actualHeight = saved.bottomMost.y;
+	if (height && ((saved.y + height) > saved.bottomMost.y)) {
+			actualHeight = saved.y + height;
+	}
+	this.y = actualHeight;
 	this.page = saved.bottomMost.page;
 	this.availableWidth = saved.availableWidth;
 	this.availableHeight = saved.bottomMost.availableHeight;
