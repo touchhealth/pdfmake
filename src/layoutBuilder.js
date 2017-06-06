@@ -548,18 +548,18 @@ LayoutBuilder.prototype.processTable = function (tableNode) {
 	var processor = new TableProcessor(tableNode);
 
 	processor.beginTable(this.writer);
-	var rowHeight = tableNode.table.height;
+	var rowHeights = tableNode.table.heights;
 
 	for (var i = 0, l = tableNode.table.body.length; i < l; i++) {
-		processor.beginRow(i, this.writer);
+		processor.beginRow(i, this.writer, tableNode.table.heights);
 
 		var height;
-		if (typeof rowHeight === 'function')
-			height = rowHeight(i);
-		else if (rowHeight && rowHeight.length)
-			height = rowHeight[i];
+		if (typeof rowHeights === 'function')
+			height = rowHeights(i);
+		else if (rowHeights && rowHeights.length)
+			height = rowHeights[i];
 		else
-			height = rowHeight;
+			height = rowHeights;
 
 		if (height == 'auto') height = undefined;
 

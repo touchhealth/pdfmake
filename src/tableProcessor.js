@@ -127,7 +127,7 @@ TableProcessor.prototype.onRowBreak = function (rowIndex, writer) {
 
 };
 
-TableProcessor.prototype.beginRow = function (rowIndex, writer) {
+TableProcessor.prototype.beginRow = function (rowIndex, writer, heights) {
 	this.topLineWidth = this.layout.hLineWidth(rowIndex, this.tableNode);
 	this.rowPaddingTop = this.layout.paddingTop(rowIndex, this.tableNode);
 	this.bottomLineWidth = this.layout.hLineWidth(rowIndex + 1, this.tableNode);
@@ -140,6 +140,8 @@ TableProcessor.prototype.beginRow = function (rowIndex, writer) {
 	}
 	this.rowTopY = writer.context().y;
 	this.reservedAtBottom = this.bottomLineWidth + this.rowPaddingBottom;
+	if (typeof heights !== 'undefined' && heights[rowIndex] !== 'auto')
+		this.reservedAtBottom += heights[rowIndex];
 
 	writer.context().availableHeight -= this.reservedAtBottom;
 
