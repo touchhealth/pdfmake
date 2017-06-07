@@ -221,6 +221,7 @@ function measure(fontProvider, textArray, styleContextStack) {
 		var background = getStyleProperty(item, styleContextStack, 'background', null);
 		var lineHeight = getStyleProperty(item, styleContextStack, 'lineHeight', 1);
 		var link = getStyleProperty(item, styleContextStack, 'link', null);
+		var preserveLeadingSpaces = getStyleProperty(item, styleContextStack, 'preserveLeadingSpaces', false);
 
 		var font = fontProvider.provideFont(fontName, bold, italics);
 
@@ -230,7 +231,7 @@ function measure(fontProvider, textArray, styleContextStack) {
 
 		var leadingSpaces = item.text.match(LEADING);
 		var trailingSpaces = item.text.match(TRAILING);
-		if (leadingSpaces) {
+		if (leadingSpaces && !preserveLeadingSpaces) {
 			item.leadingCut = font.widthOfString(leadingSpaces[0], fontSize);
 		} else {
 			item.leadingCut = 0;
