@@ -554,12 +554,14 @@ LayoutBuilder.prototype.processTable = function (tableNode) {
 		processor.beginRow(i, this.writer, tableNode.table.heights);
 
 		var height;
-		if (typeof rowHeights === 'function')
+		if (typeof rowHeights === 'function') {
 			height = rowHeights(i);
-		else if (rowHeights && rowHeights.length)
+		}	else if (rowHeights && rowHeights.length) {
 			height = rowHeights[i];
-		else
+			if (typeof height === 'object') height = height.height;
+		} else {
 			height = rowHeights;
+		}
 
 		if (height == 'auto') height = undefined;
 
