@@ -129,18 +129,18 @@ LayoutBuilder.prototype.tryLayoutDocument = function (docStructure, fontProvider
 
 	this.linearNodeList = [];
 	docStructure = this.docPreprocessor.preprocessDocument(docStructure);
-	docStructure = this.docMeasure.measureDocument(docStructure);
+	docStructure = this.docMeasure.measureDocument(docStructure);  // Porcentagem deveria estar resolvida depois dessa chamada?
 
 	this.writer = new PageElementWriter(
 		new DocumentContext(this.pageSize, this.pageMargins), this.tracker);
 
 	var _this = this;
-	this.writer.context().tracker.startTracking('pageAdded', function () {
+	this.writer.context().tracker.startTracking('pageAdded', function () {  // Aqui a informação da largura é necessária
 		_this.addBackground(background);
 	});
 
 	this.addBackground(background);
-	this.processNode(docStructure);
+	this.processNode(docStructure);  // A porcentagem só é efetivamente resolvida aqui, tarde demais...
 	this.addHeadersAndFooters(header, footer);
 	/* jshint eqnull:true */
 	if (watermark != null) {

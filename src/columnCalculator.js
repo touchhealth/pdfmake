@@ -26,7 +26,7 @@ function buildColumnWidths(columns, availableWidth) {
 
 	fixedColumns.forEach(function (col) {
 		// width specified as %
-		if (typeof col.width === 'string' && /\d+%/.test(col.width)) {
+		if (typeof col.width === 'string' && /\d+%/.test(col.width)) {  // Olha so... aqui trata %
 			col.width = parseFloat(col.width) * initial_availableWidth / 100;
 		}
 		if (col.width < (col._minWidth) && col.elasticWidth) {
@@ -92,6 +92,10 @@ function isStarColumn(column) {
 	return column.width === null || column.width === undefined || column.width === '*' || column.width === 'star';
 }
 
+function isPercentColumn(column) {
+	return ((typeof column.width === 'string') && (column.width[column.width.length - 1] == '%'));
+}
+
 //TODO: refactor and reuse in measureTable
 function measureMinMax(columns) {
 	var result = {min: 0, max: 0};
@@ -109,6 +113,12 @@ function measureMinMax(columns) {
 		} else if (isAutoColumn(c)) {
 			result.min += c._minWidth;
 			result.max += c._maxWidth;
+		} else if (isPercentColumn(c)) {
+			// FIXME TODO: Deveria haver algum tratamento aqui?
+      // Caso afirmativo, como saberiamos resolver a % sem ter acesso a availableHeight?
+      // Poderíamos deixar essa resolução para depois? Se ignorarmos aqui,
+      // haverá uma chamada posteriormente a buildColumnWidths (definida no começo
+      // deste arquivo) que tem uma lógica que tenta resolver %.
 		} else {
 			result.min += ((c.width !== undefined && c.width) || c._minWidth);
 			result.max += ((c.width !== undefined && c.width) || c._maxWidth);

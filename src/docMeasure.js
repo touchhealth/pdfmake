@@ -563,6 +563,8 @@ DocMeasure.prototype.measureTable = function (node) {
 
 	var measures = ColumnCalculator.measureMinMax(node.table.widths);
 
+	// No caso do bug (porque as porcentagens não são resolvidas):
+	// measures.min = measures.min = "025%25%". Era esperado um número aqui.
 	node._minWidth = measures.min + node._offsets.total;
 	node._maxWidth = measures.max + node._offsets.total;
 
