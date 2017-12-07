@@ -103,6 +103,7 @@ StyleContextStack.prototype.autopush = function (item) {
 		'characterSpacing',
 		'noWrap',
 		'markerColor',
+		'tableAlignment',
 		'leadingIndent'
 			//'tableCellPadding'
 			// 'cellBorder',
