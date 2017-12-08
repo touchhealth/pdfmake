@@ -128,8 +128,7 @@ TableProcessor.prototype.beginTable = function (writer) {
 TableProcessor.prototype.onRowBreak = function (rowIndex, writer) {
 	var self = this;
 	return function () {
-		//console.log('moving by : ', topLineWidth, rowPaddingTop);
-		var offset = self.rowPaddingTop + (!self.headerRows ? self.topLineWidth : 0)+ self.startX;
+		var offset = self.rowPaddingTop + (!self.headerRows ? self.topLineWidth : 0) + self.startX;
 		writer.context().moveDown(offset);
 	};
 
@@ -198,7 +197,6 @@ TableProcessor.prototype.drawHorizontalLine = function (lineIndex, writer, overr
 			if (!shouldDrawLine || i === l - 1) {
 				if (currentLine && currentLine.width) {
 					var x1 = currentLine.left;
-					// if (this.tableNode._alignment) {
 					if (this.tableAlignment) {
 						x1 = this.startX;
 					}
