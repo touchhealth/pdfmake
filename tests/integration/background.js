@@ -1,4 +1,3 @@
-/* jslint node: true */
 'use strict';
 
 var assert = require('assert');
@@ -45,20 +44,20 @@ describe('Integration test: background', function () {
 					'Background paragraph'
 				];
 			},
-      content: [
-        {
-          table: {
-            body: [
-              [
-                {
-                  text: '\n',
-                  fillColor: '#7d02c9'
-                }
-              ]
-            ]
-          }
-        }
-      ]
+			content: [
+				{
+					table: {
+						body: [
+							[
+								{
+									text: '\n',
+									fillColor: '#7d02c9'
+								}
+							]
+						]
+					}
+				}
+			]
 		};
 
 		var pages = testHelper.renderPages('A6', dd);

@@ -1,4 +1,3 @@
-/* jslint node: true */
 'use strict';
 
 var isString = require('./helpers').isString;
@@ -13,6 +12,7 @@ function DocPreprocessor() {
 
 DocPreprocessor.prototype.preprocessDocument = function (docStructure) {
 	this.tocs = [];
+	this.nodeReferences = [];
 	return this.preprocessNode(docStructure);
 };
 
@@ -50,6 +50,8 @@ DocPreprocessor.prototype.preprocessNode = function (node) {
 		return this.preprocessCanvas(node);
 	} else if (node.qr) {
 		return this.preprocessQr(node);
+	} else if (node.pageReference || node.textReference) {
+		return this.preprocessText(node);
 	} else {
 		throw 'Unrecognized document structure: ' + JSON.stringify(node, fontStringify);
 	}
@@ -125,6 +127,36 @@ DocPreprocessor.prototype.preprocessText = function (node) {
 
 			this.tocs[tocItemId].toc._items.push(node);
 		}
+	}
+
+	if (node.id) {
+		if (this.nodeReferences[node.id]) {
+			if (!this.nodeReferences[node.id]._pseudo) {
+				throw "Node id '" + node.id + "' already exists";
+			}
+
+			this.nodeReferences[node.id]._nodeRef = node;
+			this.nodeReferences[node.id]._pseudo = false;
+		} else {
+			this.nodeReferences[node.id] = {_nodeRef: node};
+		}
+	}
+
+	if (node.pageReference) {
+		if (!this.nodeReferences[node.pageReference]) {
+			this.nodeReferences[node.pageReference] = {_nodeRef: {}, _pseudo: true};
+		}
+		node.text = '00000';
+		node._pageRef = this.nodeReferences[node.pageReference];
+	}
+
+	if (node.textReference) {
+		if (!this.nodeReferences[node.textReference]) {
+			this.nodeReferences[node.textReference] = {_nodeRef: {}, _pseudo: true};
+		}
+
+		node.text = '';
+		node._textRef = this.nodeReferences[node.textReference];
 	}
 
 	if (node.text && node.text.text) {

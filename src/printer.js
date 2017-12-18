@@ -1,4 +1,4 @@
-/* jslint node: true */
+/*eslint no-unused-vars: ["error", {"args": "none"}]*/
 'use strict';
 
 var FontProvider = require('./fontProvider');
@@ -224,7 +224,6 @@ function fixPageMargins(margin) {
 }
 
 function registerDefaultTableLayouts(layoutBuilder) {
-	/*jshint unused: false */
 	layoutBuilder.registerTableLayouts({
 		noBorders: {
 			hLineWidth: function (i) {
@@ -352,11 +351,11 @@ function renderPages(pages, fontProvider, pdfKitDoc, progressCallback) {
 }
 
 function renderLine(line, x, y, pdfKitDoc) {
-	if (line._tocItemNode) {
+	if (line._pageNodeRef) {
 		var newWidth;
 		var diffWidth;
 		var textTools = new TextTools(null);
-		var pageNumber = line._tocItemNode.positions[0].pageNumber.toString();
+		var pageNumber = line._pageNodeRef.positions[0].pageNumber.toString();
 
 		line.inlines[0].text = pageNumber;
 		line.inlines[0].linkToPage = pageNumber;

@@ -1,4 +1,5 @@
-/* jslint node: true */
+/*eslint no-unused-vars: ["error", {"args": "none"}]*/
+
 'use strict';
 
 var TextTools = require('./textTools');
@@ -196,13 +197,16 @@ DocMeasure.prototype.measureImage = function (node) {
 
 DocMeasure.prototype.measureLeaf = function (node) {
 
+	if (node._textRef && node._textRef._nodeRef.text) {
+		node.text = node._textRef._nodeRef.text;
+	}
+
 	// Make sure style properties of the node itself are considered when building inlines.
 	// We could also just pass [node] to buildInlines, but that fails for bullet points.
 	var styleStack = this.styleStack.clone();
 	styleStack.push(node);
 
 	var data = this.textTools.buildInlines(node.text, styleStack);
-
 	node._inlines = data.items;
 	node._minWidth = data.minWidth;
 	node._maxWidth = data.maxWidth;
@@ -516,6 +520,8 @@ DocMeasure.prototype.measureTable = function (node) {
 	extendTableWidths(node);
 	node._layout = getLayout(this.tableLayouts);
 	node._offsets = getOffsets(node._layout);
+	node._tableAlignment = this.styleStack.getProperty('tableAlignment');
+	node._alignment = this.styleStack.getProperty('alignment');
 
 	var colSpans = [];
 	var col, row, cols, rows;
@@ -579,7 +585,6 @@ DocMeasure.prototype.measureTable = function (node) {
 			layout = tableLayouts[layout];
 		}
 
-		/*jshint unused: false */
 		var defaultLayout = {
 			hLineWidth: function (i, node) {
 				return 1;

@@ -1,4 +1,3 @@
-/* jslint node: true */
 'use strict';
 
 var isString = require('./helpers').isString;
@@ -104,6 +103,7 @@ StyleContextStack.prototype.autopush = function (item) {
 		'characterSpacing',
 		'noWrap',
 		'markerColor',
+		'tableAlignment',
 		'leadingIndent'
 			//'tableCellPadding'
 			// 'cellBorder',
