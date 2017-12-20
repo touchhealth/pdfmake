@@ -336,9 +336,8 @@ function decorateNode(node) {
 	};
 }
 
-LayoutBuilder.prototype.processNode = function (node) {
+LayoutBuilder.prototype.processNode = function (node, startX) {
 	var self = this;
-
 	this.linearNodeList.push(node);
 	decorateNode(node);
 
@@ -361,21 +360,21 @@ LayoutBuilder.prototype.processNode = function (node) {
 		}
 
 		if (node.stack) {
-			self.processVerticalContainer(node);
+			self.processVerticalContainer(node, startX);
 		} else if (node.columns) {
-			self.processColumns(node);
+			self.processColumns(node, startX);
 		} else if (node.ul) {
-			self.processList(false, node);
+			self.processList(false, node, startX);
 		} else if (node.ol) {
-			self.processList(true, node);
+			self.processList(true, node, startX);
 		} else if (node.table) {
-			self.processTable(node);
+			self.processTable(node, startX);
 		} else if (node.text !== undefined) {
-			self.processLeaf(node);
+			self.processLeaf(node, startX);
 		} else if (node.toc) {
 			self.processToc(node);
 		} else if (node.image) {
-			self.processImage(node);
+			self.processImage(node, startX);
 		} else if (node.canvas) {
 			self.processCanvas(node);
 		} else if (node.qr) {
@@ -419,10 +418,10 @@ LayoutBuilder.prototype.processNode = function (node) {
 };
 
 // vertical container
-LayoutBuilder.prototype.processVerticalContainer = function (node) {
+LayoutBuilder.prototype.processVerticalContainer = function (node, startX) {
 	var self = this;
 	node.stack.forEach(function (item) {
-		self.processNode(item);
+		self.processNode(item, startX);
 		addAll(node.positions, item.positions);
 
 		//TODO: paragraph gap
@@ -430,8 +429,12 @@ LayoutBuilder.prototype.processVerticalContainer = function (node) {
 };
 
 // columns
-LayoutBuilder.prototype.processColumns = function (columnNode) {
+LayoutBuilder.prototype.processColumns = function (columnNode, startX) {
 	var columns = columnNode.columns;
+	var originalX = this.writer.context().x;
+	if (typeof startX === 'number') {
+		this.writer.context().x += startX;
+	}
 	var availableWidth = this.writer.context().availableWidth;
 	var gaps = gapArray(columnNode._gap);
 
@@ -442,6 +445,7 @@ LayoutBuilder.prototype.processColumns = function (columnNode) {
 	ColumnCalculator.buildColumnWidths(columns, availableWidth);
 	var result = this.processRow(columns, columns, gaps);
 	addAll(columnNode.positions, result.positions);
+	this.writer.context().x = originalX;
 
 
 	function gapArray(gap) {
@@ -460,7 +464,7 @@ LayoutBuilder.prototype.processColumns = function (columnNode) {
 	}
 };
 
-LayoutBuilder.prototype.processRow = function (columns, widths, gaps, tableBody, tableRow, height) {
+LayoutBuilder.prototype.processRow = function (columns, widths, gaps, tableBody, tableRow, height, startX) {
 	var self = this;
 	var pageBreaks = [], positions = [];
 
@@ -482,7 +486,7 @@ LayoutBuilder.prototype.processRow = function (columns, widths, gaps, tableBody,
 
 			self.writer.context().beginColumn(width, leftOffset, getEndingCell(column, i));
 			if (!column._span) {
-				self.processNode(column);
+				self.processNode(column, startX);
 				addAll(positions, column.positions);
 			} else if (column._columnEndingContext) {
 				// row-span ending
@@ -535,7 +539,7 @@ LayoutBuilder.prototype.processRow = function (columns, widths, gaps, tableBody,
 };
 
 // lists
-LayoutBuilder.prototype.processList = function (orderedList, node) {
+LayoutBuilder.prototype.processList = function (orderedList, node, startX) {
 	var self = this,
 		items = orderedList ? node.ol : node.ul,
 		gapSize = node._gapSize;
@@ -546,7 +550,7 @@ LayoutBuilder.prototype.processList = function (orderedList, node) {
 	this.tracker.auto('lineAdded', addMarkerToFirstLeaf, function () {
 		items.forEach(function (item) {
 			nextMarker = item.listMarker;
-			self.processNode(item);
+			self.processNode(item, startX);
 			addAll(node.positions, item.positions);
 		});
 	});
@@ -564,11 +568,17 @@ LayoutBuilder.prototype.processList = function (orderedList, node) {
 				var vector = marker.canvas[0];
 
 				offsetVector(vector, -marker._minWidth, 0);
+				if (typeof startX === 'number') {
+					vector.x += startX;
+				}
 				self.writer.addVector(vector);
 			} else if (marker._inlines) {
 				var markerLine = new Line(self.pageSize.width);
 				markerLine.addInline(marker._inlines[0]);
 				markerLine.x = -marker._minWidth;
+				if (typeof startX === 'number') {
+					markerLine.x += startX;
+				}
 				markerLine.y = line.getAscenderHeight() - markerLine.getAscenderHeight();
 				self.writer.addLine(markerLine, true);
 			}
@@ -577,9 +587,13 @@ LayoutBuilder.prototype.processList = function (orderedList, node) {
 };
 
 // tables
-LayoutBuilder.prototype.processTable = function (tableNode) {
-	var processor = new TableProcessor(tableNode);
+LayoutBuilder.prototype.processTable = function (tableNode, startX) {
 
+	var processor = new TableProcessor(tableNode);
+	var originalX = this.writer.context().x;
+	if (typeof startX === 'number') {
+		this.writer.context().x += startX;
+	}
 	processor.beginTable(this.writer);
 
 	var rowHeights = tableNode.table.heights;
@@ -599,17 +613,18 @@ LayoutBuilder.prototype.processTable = function (tableNode) {
 			height = undefined;
 		}
 
-		var result = this.processRow(tableNode.table.body[i], tableNode.table.widths, tableNode._offsets.offsets, tableNode.table.body, i, height);
+		var result = this.processRow(tableNode.table.body[i], tableNode.table.widths, tableNode._offsets.offsets, tableNode.table.body, i, height, processor.startX);
 		addAll(tableNode.positions, result.positions);
 
 		processor.endRow(i, this.writer, result.pageBreaks);
 	}
 
 	processor.endTable(this.writer);
+	this.writer.context().x = originalX;
 };
 
 // leafs (texts)
-LayoutBuilder.prototype.processLeaf = function (node) {
+LayoutBuilder.prototype.processLeaf = function (node, startX) {
 	var line = this.buildNextLine(node);
 	var currentHeight = (line) ? line.getHeight() : 0;
 	var maxHeight = node.maxHeight || -1;
@@ -619,7 +634,7 @@ LayoutBuilder.prototype.processLeaf = function (node) {
 	}
 
 	while (line && (maxHeight === -1 || currentHeight < maxHeight)) {
-		var positions = this.writer.addLine(line);
+		var positions = this.writer.addLine(line, false, startX);
 		node.positions.push(positions);
 		line = this.buildNextLine(node);
 		if (line) {
@@ -636,7 +651,6 @@ LayoutBuilder.prototype.processToc = function (node) {
 };
 
 LayoutBuilder.prototype.buildNextLine = function (textNode) {
-
 	function cloneInline(inline) {
 		var newInline = inline.constructor();
 		for (var key in inline) {
@@ -673,17 +687,18 @@ LayoutBuilder.prototype.buildNextLine = function (textNode) {
 				textNode._inlines.unshift(newInline);
 			}
 		}
-
 		line.addInline(inline);
 	}
 
 	line.lastLineInParagraph = textNode._inlines.length === 0;
-
 	return line;
 };
 
 // images
-LayoutBuilder.prototype.processImage = function (node) {
+LayoutBuilder.prototype.processImage = function (node, startX) {
+	if (typeof startX === 'number') {
+		this.writer.context().x += startX;
+	}
 	var position = this.writer.addImage(node);
 	node.positions.push(position);
 };
